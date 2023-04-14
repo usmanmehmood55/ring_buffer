@@ -42,9 +42,20 @@ make
 ./ring_buffer.exe
 ```
 
-## Example Code
-
-The example code for using this ring buffer is provided in [`main.c`](main.c)
+## Files
+```
+ring_buffer
+  |
+  |- ring_buffer
+  |    |
+  |    |- ring_buffer.h
+  |    |- ring_buffer.c
+  |
+  |- main.c
+  |- Makefile 
+```
+- The library is inside the [`ring_buffer`](ring_buffer) folder.
+- The example code for using this ring buffer is provided in [`main.c`](main.c)
 
 
 ## To Do
