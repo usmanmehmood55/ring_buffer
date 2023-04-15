@@ -52,7 +52,7 @@ ring_buffer
   |- Makefile 
 ```
 - The library consists of [`ring_buffer.h`](ring_buffer.h) and [`ring_buffer.c`](ring_buffer.c) files.
-- The test and example code for using is provided in [`test.c`](test.c)
+- The test and example code for using the library is provided in [`test.c`](test.c)
 
 
 ## To Do
