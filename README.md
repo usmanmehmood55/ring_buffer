@@ -39,23 +39,20 @@ Following tools are required to compile
 In the repository directory, `make` and then execute the .exe file.
 ```bash
 make
-./ring_buffer.exe
+./test.exe
 ```
 
 ## Files
 ```
 ring_buffer
   |
-  |- ring_buffer
-  |    |
-  |    |- ring_buffer.h
-  |    |- ring_buffer.c
-  |
-  |- main.c
+  |- ring_buffer.h
+  |- ring_buffer.c
+  |- test.c
   |- Makefile 
 ```
-- The library is inside the [`ring_buffer`](ring_buffer) folder.
-- The example code for using this ring buffer is provided in [`main.c`](main.c)
+- The library consists of [`ring_buffer.h`](ring_buffer.h) and [`ring_buffer.c`](ring_buffer.c) files.
+- The test and example code for using is provided in [`test.c`](test.c)
 
 
 ## To Do

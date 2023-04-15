@@ -1,8 +1,8 @@
 CC       = gcc
 CFLAGS   = -g
 LDFLAGS  =
-OBJFILES = ring_buffer/ring_buffer.o main.o 
-TARGET   = ring_buffer.exe
+OBJFILES = ring_buffer.o test.o 
+TARGET   = test.exe
 
 all: $(TARGET)
 
