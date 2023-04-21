@@ -28,13 +28,7 @@
 #include <string.h>
 #include <errno.h>
 
-typedef struct ring_buffer
-{
-    double   *buffer; // pointer to the buffer
-    uint16_t size;    // maximum size of the buffer
-    uint16_t head;    // index of the current head element in the buffer
-    double   sum;     // sum of all the elements in the buffer.
-} ring_buffer;
+typedef struct ring_buffer_t ring_buffer_t;
 
 /**
  * @brief Creates a new ring buffer with the specified size.
@@ -44,7 +38,7 @@ typedef struct ring_buffer
  *
  * @return 0 on success, or a negative error code on failure.
  */
-int ring_buffer_create(ring_buffer *p_buffer, uint16_t size);
+int ring_buffer_create(ring_buffer_t **p_buffer, uint16_t size);
 
 /**
  * @brief Gets the index of the head element of a ring buffer.
@@ -54,7 +48,7 @@ int ring_buffer_create(ring_buffer *p_buffer, uint16_t size);
  *
  * @return 0 on success, or a negative error code on failure.
  */
-int ring_buffer_get_head_index(const ring_buffer *p_buffer, uint16_t *index);
+int ring_buffer_get_head_index(const ring_buffer_t *p_buffer, uint16_t *index);
 
 /**
  * @brief Adds an item to the ring buffer.
@@ -67,7 +61,7 @@ int ring_buffer_get_head_index(const ring_buffer *p_buffer, uint16_t *index);
  *
  * @return 0 on success, or a negative error code on failure.
  */
-int ring_buffer_add(ring_buffer *p_buffer, double item);
+int ring_buffer_add(ring_buffer_t *p_buffer, double item);
 
 /**
  * @brief Gets an item from the ring buffer at the specified index.
@@ -78,7 +72,7 @@ int ring_buffer_add(ring_buffer *p_buffer, double item);
  *
  * @return 0 on success, or a negative error code on failure.
  */
-int ring_buffer_get(const ring_buffer *p_buffer, uint16_t index, double *out_val);
+int ring_buffer_get_element(const ring_buffer_t *p_buffer, uint16_t index, double *out_val);
 
 /**
  * @brief Gets the sum of all elements in the ring buffer.
@@ -88,7 +82,7 @@ int ring_buffer_get(const ring_buffer *p_buffer, uint16_t index, double *out_val
  *
  * @return 0 on success, or a negative error code on failure.
  */
-int ring_buffer_sum(const ring_buffer *p_buffer, double *sum);
+int ring_buffer_get_sum(const ring_buffer_t *p_buffer, double *sum);
 
 /**
  * @brief Gets the size of the ring buffer.
@@ -98,14 +92,14 @@ int ring_buffer_sum(const ring_buffer *p_buffer, double *sum);
  *
  * @return 0 on success, or a negative error code on failure.
  */
-int ring_buffer_size(const ring_buffer *p_buffer, uint16_t *size);
+int ring_buffer_get_size(const ring_buffer_t *p_buffer, uint16_t *size);
 
 /**
  * @brief Prints the contents of the ring buffer to stdout.
  *
  * @param[in] p_buffer Pointer to the ring buffer to print.
  */
-void ring_buffer_print(const ring_buffer *p_buffer);
+void ring_buffer_print(const ring_buffer_t *p_buffer);
 
 /**
  * @brief Destroys a ring buffer, freeing its memory.
@@ -114,6 +108,6 @@ void ring_buffer_print(const ring_buffer *p_buffer);
  *
  * @return 0 on success, or a negative error code on failure.
  */
-int ring_buffer_destroy(ring_buffer *p_buffer);
+int ring_buffer_destroy(ring_buffer_t *p_buffer);
 
 #endif
