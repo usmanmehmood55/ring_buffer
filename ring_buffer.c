@@ -21,38 +21,57 @@
 
 #include "ring_buffer.h"
 
+struct ring_buffer_t
+{
+    double   *buffer;    // pointer to the buffer
+    uint16_t size;       // maximum size of the buffer
+    uint16_t head;       // index of the current head element in the buffer
+    double   sum;        // sum of all the elements in the buffer.
+    uint16_t occupancy;  // number of elements currently in the buffer
+};
+
 /**
  * @brief Creates a new ring buffer with the specified size.
  *
  * @param[in,out] p_buffer Pointer to the ring buffer to create.
  * @param[in]     size     Size of the ring buffer to create.
  *
- * @return 0 on success, or a negative error code on failure.
+ * @return 0 on success,
+ * @return -EINVAL if buffer_size is 0,
+ * @return -ENOMEM if memory allocation failed
  */
-int ring_buffer_create(ring_buffer *p_buffer, uint16_t size)
+int ring_buffer_create(ring_buffer_t **p_buffer, uint16_t size)
 {
     if (size == 0U)
     {
-        printf("\r%s: Cannot create ring buffer with size 0\n", __func__);
         return -EINVAL;
     }
 
-    p_buffer->buffer = NULL;
-    p_buffer->size   = size;
-    p_buffer->head   = 0;
-    p_buffer->sum    = 0;
-
-    p_buffer->buffer = (double *)malloc(size * sizeof(double));
-    if (p_buffer->buffer == NULL)
+    *p_buffer = (ring_buffer_t *)malloc(sizeof(ring_buffer_t));
+    if (*p_buffer == NULL)
     {
-        printf("\r%s: Failed to allocate memory for ring buffer\n", __func__);
         return -ENOMEM;
     }
 
-    (void)memset(p_buffer->buffer, 0, size * sizeof(double));
+    (*p_buffer)->buffer    = NULL;
+    (*p_buffer)->size      = size;
+    (*p_buffer)->head      = 0;
+    (*p_buffer)->sum       = 0;
+    (*p_buffer)->occupancy = 0;
+
+    (*p_buffer)->buffer = (double *)malloc(size * sizeof(double));
+    if ((*p_buffer)->buffer == NULL)
+    {
+        free(*p_buffer);
+        *p_buffer = NULL;
+        return -ENOMEM;
+    }
+
+    (void)memset((*p_buffer)->buffer, 0, size * sizeof(double));
 
     return 0;
 }
+
 
 /**
  * @brief Gets the index of the head element of a ring buffer.
@@ -60,13 +79,13 @@ int ring_buffer_create(ring_buffer *p_buffer, uint16_t size)
  * @param[in]  p_buffer Pointer to the ring buffer.
  * @param[out] index    Pointer to the location to store the head index.
  *
- * @return 0 on success, or a negative error code on failure.
+ * @return 0 on success,
+ * @return -EINVAL on uninitialized buffer
  */
-int ring_buffer_get_head_index(const ring_buffer *p_buffer, uint16_t *index)
+int ring_buffer_get_head_index(const ring_buffer_t *p_buffer, uint16_t *index)
 {
     if (p_buffer == NULL)
     {
-        printf("\r%s: Cannot get index from uninitialized buffer\n", __func__);
         return -EINVAL;
     }
 
@@ -84,36 +103,25 @@ int ring_buffer_get_head_index(const ring_buffer *p_buffer, uint16_t *index)
  * @param[in,out] p_buffer Pointer to the ring buffer to add the item to.
  * @param[in]     item     Item to add to the buffer.
  *
- * @return 0 on success, or a negative error code on failure.
+ * @return 0 on success,
+ * @return -EFAULT on uninitialized buffer
  */
-int ring_buffer_add(ring_buffer *p_buffer, double item)
+int ring_buffer_add(ring_buffer_t *p_buffer, double item)
 {
     if (p_buffer == NULL)
     {
-        printf("\r%s: Attempted to add item to uninitialized buffer\n", __func__);
         return -EFAULT;
     }
 
-    if (p_buffer->size == 0U)
+    // Buffer overflow, discarding oldest value
+    if (p_buffer->occupancy == p_buffer->size)
     {
-        printf("\r%s: Cannot add item to buffer with size 0\n", __func__);
-        return -EINVAL;
-    }
-
-    // I don't understand this part of the code
-    if ((p_buffer->head == 0U) && (p_buffer->sum != 0U))
-    {
-        // Buffer overflow, discarding oldest value
-        p_buffer->sum -= p_buffer->buffer[p_buffer->size - 1U];
-    }
-    else if ((p_buffer->head > 0U) && (p_buffer->head < p_buffer->size) && (p_buffer->sum == 0U))
-    {
-        // Buffer underflow, discarding all values
-        p_buffer->head = 0;
+        uint16_t oldest_index = (p_buffer->head + 1U) % p_buffer->size;
+        p_buffer->sum -= p_buffer->buffer[oldest_index];
     }
     else
     {
-        // do nothing
+        p_buffer->occupancy++; // Increment occupancy counter
     }
 
     p_buffer->sum -= p_buffer->buffer[p_buffer->head];
@@ -124,6 +132,7 @@ int ring_buffer_add(ring_buffer *p_buffer, double item)
     return 0;
 }
 
+
 /**
  * @brief Gets an item from the ring buffer at the specified index.
  *
@@ -131,19 +140,19 @@ int ring_buffer_add(ring_buffer *p_buffer, double item)
  * @param[in]  index      Index of the item to get.
  * @param[out] out_value  Pointer to the location to store the retrieved value.
  *
- * @return 0 on success, or a negative error code on failure.
+ * @return 0 on success,
+ * @return -EFAULT on p_buffer or out_value being null,
+ * @return -EINVAL on index greater than size
  */
-int ring_buffer_get(const ring_buffer *p_buffer, uint16_t index, double *out_value)
+int ring_buffer_get_element(const ring_buffer_t *p_buffer, uint16_t index, double *out_value)
 {
     if ((p_buffer == NULL) || (out_value == NULL))
     {
-        printf("\r%s: Invalid parameters for ring buffer get operation\n", __func__);
         return -EFAULT;
     }
 
     if (index >= p_buffer->size)
     {
-        printf("\r%s: Invalid index for ring buffer get operation\n", __func__);
         return -EINVAL;
     }
 
@@ -159,13 +168,13 @@ int ring_buffer_get(const ring_buffer *p_buffer, uint16_t index, double *out_val
  * @param[in]  p_buffer Pointer to the ring buffer to get the sum from.
  * @param[out] sum      Pointer to the location to store the sum.
  *
- * @return 0 on success, or a negative error code on failure.
+ * @return 0 on success,
+ * @return -EFAULT on uninitialized buffer
  */
-int ring_buffer_sum(const ring_buffer *p_buffer, double *sum)
+int ring_buffer_get_sum(const ring_buffer_t *p_buffer, double *sum)
 {
     if (p_buffer == NULL)
     {
-        printf("\r%s: Cannot get sum from uninitialized buffer\n", __func__);
         return -EFAULT;
     }
 
@@ -181,12 +190,12 @@ int ring_buffer_sum(const ring_buffer *p_buffer, double *sum)
  * @param[out] size     Pointer to the location to store the size.
  *
  * @return 0 on success, or a negative error code on failure.
+ * @return -EFAULT on uninitialized buffer
  */
-int ring_buffer_size(const ring_buffer *p_buffer, uint16_t *size)
+int ring_buffer_get_size(const ring_buffer_t *p_buffer, uint16_t *size)
 {
     if (p_buffer == NULL)
     {
-        printf("\r%s: Cannot get size from uninitialized buffer\n", __func__);
         return -EFAULT;
     }
 
@@ -200,7 +209,7 @@ int ring_buffer_size(const ring_buffer *p_buffer, uint16_t *size)
  *
  * @param[in] p_buffer Pointer to the ring buffer to print.
  */
-void ring_buffer_print(const ring_buffer *p_buffer)
+void ring_buffer_print(const ring_buffer_t *p_buffer)
 {
     if (p_buffer == NULL)
     {
@@ -222,18 +231,20 @@ void ring_buffer_print(const ring_buffer *p_buffer)
  * @param[in,out] p_buffer Pointer to the ring buffer to destroy.
  *
  * @return 0 on success, or a negative error code on failure.
+ * @return -EFAULT on uninitialized buffer
  */
-int ring_buffer_destroy(ring_buffer *p_buffer)
+int ring_buffer_destroy(ring_buffer_t *p_buffer)
 {
     if (p_buffer == NULL)
     {
-        printf("\r%s: Attempted to destroy uninitialized buffer\n", __func__);
         return -EFAULT;
     }
 
     free(p_buffer->buffer);
     p_buffer->buffer = NULL;
-    p_buffer->size = 0;
+    p_buffer->size   = 0;
+    p_buffer->head   = 0;
+    p_buffer->sum    = 0;
 
     return 0;
 }
