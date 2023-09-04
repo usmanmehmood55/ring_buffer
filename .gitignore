@@ -1,5 +1,2 @@
 .vscode/
-
-# Object files
-*.o
-*.exe
+build

@@ -6,6 +6,7 @@ characteristic of a ring buffer is that it is implemented as a circular array, w
 the end of the buffer wraps around to the beginning of the buffer, forming a closed 
 loop.
 
+[![Build and Test](https://github.com/usmanmehmood55/ring_buffer/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/usmanmehmood55/ring_buffer/actions/workflows/build_and_test.yml) [![codecov](https://codecov.io/github/usmanmehmood55/ring_buffer/graph/badge.svg?token=CZTTM7JXRB)](https://codecov.io/github/usmanmehmood55/ring_buffer) 
 
 ## Uses and Benefits
 
