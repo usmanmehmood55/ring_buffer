@@ -6,7 +6,8 @@ characteristic of a ring buffer is that it is implemented as a circular array, w
 the end of the buffer wraps around to the beginning of the buffer, forming a closed 
 loop.
 
-[![Build and Test](https://github.com/usmanmehmood55/ring_buffer/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/usmanmehmood55/ring_buffer/actions/workflows/build_and_test.yml) [![codecov](https://codecov.io/github/usmanmehmood55/ring_buffer/graph/badge.svg?token=CZTTM7JXRB)](https://codecov.io/github/usmanmehmood55/ring_buffer) 
+[![Build and Test](https://github.com/usmanmehmood55/ring_buffer/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/usmanmehmood55/ring_buffer/actions/workflows/build_and_test.yml)
+[![codecov](https://codecov.io/github/usmanmehmood55/ring_buffer/graph/badge.svg?token=CZTTM7JXRB)](https://codecov.io/github/usmanmehmood55/ring_buffer) 
 
 ## Uses and Benefits
 
@@ -34,13 +35,25 @@ This is especially useful in embedded systems where memory is limited.
 ## Setup
 
 Following tools are required to compile
-- make
-- gcc
+- [CMake](https://cmake.org/)
+- [Ninja](https://ninja-build.org/)
+- [GCC](https://gcc.gnu.org/)
 
-In the repository directory, `make` and then execute the .exe file.
+In the repository directory, use CMake and Ninja to build
 ```bash
-make
-./test.exe
+cmake -GNinja -Bbuild
+ninja -C build
+```
+
+To make a `Debug` build with coverage data,
+```bash
+cmake -GNinja -Bbuild -DCMAKE_BUILD_TYPE=Debug
+ninja -C build
+```
+
+To run the test application
+```bash
+./build/ring_buffer.exe
 ```
 
 ## Files
@@ -52,8 +65,9 @@ ring_buffer
   |- test.c
   |- Makefile 
 ```
-- The library consists of [`ring_buffer.h`](ring_buffer.h) and [`ring_buffer.c`](ring_buffer.c) files.
-- The test and example code for using the library is provided in [`test.c`](test.c)
+- The library consists of [`ring_buffer.h`](include/ring_buffer.h) and 
+  [`ring_buffer.c`](src/ring_buffer.c) files.
+- The test and example code for using the library is provided in [`test.c`](test/test_ring_buffer.c)
 
 
 ## To Do
